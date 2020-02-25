@@ -38,11 +38,22 @@ func Array(array interface{}) (*manager, error) {
 	return nil, errors.New("the parameter is not array or slice")
 }
 
-/*
- * return array or slice length
- */
 func (m *manager) Len() int {
 	data := m.Data
 	v := getElemValue(data)
 	return v.Len()
+}
+
+/*
+ * Only support return value and index
+ */
+
+func (m *manager) ForEach(f func(interface{}, int)) {
+	data := m.Data
+	v := getElemValue(data)
+	len := m.Len()
+	for i := 0; i < len; i ++{
+		o := v.Index(i)
+		f(o.Interface(), i)
+	}
 }
