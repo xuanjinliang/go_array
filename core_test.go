@@ -1,33 +1,54 @@
 package go_array
 
 import (
-	. "github.com/smartystreets/goconvey/convey"
 	"log"
 	"testing"
-)
 
-var array = []int{1, 2, 3}
+	. "github.com/smartystreets/goconvey/convey"
+)
 
 func TestArray(t *testing.T) {
 	Convey("test", t, func() {
-		array, err := Array(array)
+		arrayData := [3]int{1, 2, 3}
+		slice := arrayData[:] // array to slice
+		array, err := Array(slice)
 		So(err, ShouldBeNil)
-		log.Printf("%v", *array)
+		// change type []int 断言
+		getArray := array.GetData().([]int)
+		log.Printf("%v", getArray)
+		// slice to array
+		var arr [3]int
+		copy(arr[:], slice[:])
+		log.Printf("%v", arr)
+		/*aa := append(arrayData, []int{1, 2, 3}...)
+		log.Printf("%v", aa)*/
+	})
+}
+
+var sliceData = []int{1, 2, 3}
+
+func TestSlice(t *testing.T) {
+	Convey("test", t, func() {
+		array, err := Array(sliceData)
+		So(err, ShouldBeNil)
+		log.Printf("%v", array.GetData())
+		/*aa := append(arrayData, []int{1, 2, 3}...)
+		log.Printf("%v", aa)*/
 	})
 }
 
 func TestManager_Len(t *testing.T) {
 	Convey("test len", t, func() {
-		array, err := Array(array)
+		array, err := Array(sliceData)
 		So(err, ShouldBeNil)
 		len := array.Len()
-		log.Printf("%v", len)
+		log.Printf("len --> %v", len)
 	})
 }
 
 func TestManager_ForEach(t *testing.T) {
 	Convey("test foreach", t, func() {
-		array, err := Array(array)
+		array, err := Array(sliceData)
 		So(err, ShouldBeNil)
 		array.ForEach(func(v interface{}, i int) {
 			//类型转换
@@ -38,3 +59,13 @@ func TestManager_ForEach(t *testing.T) {
 		})
 	})
 }
+
+
+func TestManager_Concat(t *testing.T) {
+	Convey("test Concat", t, func() {
+		array, err := Array(sliceData)
+		So(err, ShouldBeNil)
+		array.Concat(5)
+	})
+}
+
