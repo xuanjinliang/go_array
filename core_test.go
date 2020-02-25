@@ -13,7 +13,7 @@ func TestNewArray(t *testing.T) {
 		array, err := Array(array)
 		So(err, ShouldBeNil)
 		log.Printf("%v", *array)
-		len := array.len()
+		len := array.Len()
 		log.Printf("%v", len)
 	})
 }
