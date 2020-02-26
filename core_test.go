@@ -95,3 +95,13 @@ func TestManager_Concat(t *testing.T) {
 		So(reflect.DeepEqual(slice1, slice2), ShouldBeTrue)
 	})
 }
+
+func TestManager_CopyWithin(t *testing.T) {
+	Convey("test Concat", t, func() {
+		arr := []int{1, 2, 3, 4, 5, 6}
+		array, err := Array(arr)
+		So(err, ShouldBeNil)
+		getArray := array.CopyWithin(2, 1, 8).([]int)
+		log.Printf("%v", getArray)
+	})
+}

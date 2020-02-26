@@ -94,3 +94,61 @@ func (m *manager) Concat(args ...interface{}) interface{} {
 	m.Data = newMData
 	return m.GetData()
 }
+
+/*
+ * slice copyWithin
+ */
+func (m *manager) minus(num int) int {
+	if num < 0 {
+		return m.Data.Len() + num
+	}
+	return num
+}
+func (m *manager) CopyWithin(target int, args ...int) interface{} {
+	data := m.Data
+	dataLen := data.Len()
+
+	target = m.minus(target)
+
+	if target >= dataLen {
+		return m.GetData()
+	}
+
+	start := 0
+	startArr := data.Slice(0, target)
+
+	end := dataLen
+	endArr := data.Slice(start, dataLen)
+
+	if len(args) > 0 {
+		start = m.minus(args[0])
+		endArr = data.Slice(start, dataLen)
+	}
+
+	if len(args) > 1 {
+		end = m.minus(args[1])
+
+		if end <= start {
+			return m.GetData()
+		}
+
+		if end > dataLen {
+			end = dataLen
+		}
+
+		curArray := data.Slice(start, end)
+		index := end + 1
+		if index >= dataLen {
+			endArr = curArray
+		} else {
+			endArr = data.Slice(index, dataLen)
+			endArr = reflect.AppendSlice(curArray, endArr)
+		}
+	}
+
+	s := reflect.MakeSlice(m.SliceType, dataLen, dataLen)
+	reflect.Copy(s, reflect.AppendSlice(startArr, endArr))
+	// log.Printf("%v, %v, %v", startArr, endArr, s)
+	m.Data = s
+	return m.GetData()
+}
