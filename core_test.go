@@ -86,10 +86,11 @@ func TestManager_Concat(t *testing.T) {
 			slice1 = append(slice1, sliceData...)
 		}
 		t1 := time.Now()
+		newArray, _ := Array(slice2)
 		for i := 1; i < l; i++ {
-			array, _ = Array(slice2)
-			slice2 = array.Concat(sliceData).([]int)
+			newArray.Concat(sliceData)
 		}
+		slice2 = newArray.GetData().([]int)
 		t2 := time.Now()
 		log.Println("reflect Concat insert:", t2.Sub(t1), "append insert: ", t1.Sub(t0))
 		So(reflect.DeepEqual(slice1, slice2), ShouldBeTrue)
