@@ -1,11 +1,12 @@
 package go_array
 
 import (
+	. "github.com/smartystreets/goconvey/convey"
 	"log"
+	"reflect"
 	"strconv"
 	"testing"
-
-	. "github.com/smartystreets/goconvey/convey"
+	"time"
 )
 
 func TestArray(t *testing.T) {
@@ -61,7 +62,6 @@ func TestManager_ForEach(t *testing.T) {
 	})
 }
 
-
 func TestManager_Concat(t *testing.T) {
 	Convey("test Concat", t, func() {
 		array, err := Array(sliceData)
@@ -72,10 +72,36 @@ func TestManager_Concat(t *testing.T) {
 		v := 5
 
 		newData := array.Concat(arr, slice, v).([]int)
-		l := len(sliceData) + len(arr) + len(slice) + len(strconv.Itoa(v))
+		length := len(sliceData) + len(arr) + len(slice) + len(strconv.Itoa(v))
 
-		So(len(newData), ShouldEqual, l)
-		log.Printf("%v, %v", newData)
+		So(len(newData), ShouldEqual, length)
+		log.Printf("%v", newData)
+
+		// 这里的测试性能
+		slice1 := make([]int, 0)
+		slice2 := make([]int, 0)
+		l := 10000
+		t0 := time.Now()
+		for i := 1; i < l; i++ {
+			slice1 = append(slice1, sliceData...)
+		}
+		t1 := time.Now()
+		for i := 1; i < l; i++ {
+			array, _ = Array(slice2)
+			slice2 = array.Concat(sliceData).([]int)
+		}
+		t2 := time.Now()
+		log.Println("reflect Concat insert:", t2.Sub(t1), "append insert: ", t1.Sub(t0))
+		So(reflect.DeepEqual(slice1, slice2), ShouldBeTrue)
 	})
 }
 
+func TestManager_CopyWithin(t *testing.T) {
+	Convey("test Concat", t, func() {
+		arr := []int{1, 2, 3, 4, 5, 6}
+		array, err := Array(arr)
+		So(err, ShouldBeNil)
+		getArray := array.CopyWithin(2, 1, 8).([]int)
+		log.Printf("%v", getArray)
+	})
+}
