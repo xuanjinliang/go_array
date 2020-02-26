@@ -2,6 +2,7 @@ package go_array
 
 import (
 	"log"
+	"strconv"
 	"testing"
 
 	. "github.com/smartystreets/goconvey/convey"
@@ -65,7 +66,16 @@ func TestManager_Concat(t *testing.T) {
 	Convey("test Concat", t, func() {
 		array, err := Array(sliceData)
 		So(err, ShouldBeNil)
-		array.Concat(5)
+
+		arr := [3]int{4, 5, 6}
+		slice := []int{7, 8, 9}
+		v := 5
+
+		newData := array.Concat(arr, slice, v).([]int)
+		l := len(sliceData) + len(arr) + len(slice) + len(strconv.Itoa(v))
+
+		So(len(newData), ShouldEqual, l)
+		log.Printf("%v, %v", newData)
 	})
 }
 

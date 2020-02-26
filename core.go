@@ -2,14 +2,13 @@ package go_array
 
 import (
 	"errors"
-	"log"
 	"reflect"
 )
 
 type manager struct {
 	Data      reflect.Value
-	sliceType reflect.Type
-	elemType  reflect.Type
+	SliceType reflect.Type
+	ElemType  reflect.Type
 }
 
 func getElemValue(data *interface{}) reflect.Value {
@@ -37,8 +36,8 @@ func Array(array interface{}) (*manager, error) {
 
 	return &manager{
 		Data:      v,
-		sliceType: reflect.ValueOf(array).Type(),
-		elemType:  reflect.TypeOf(array).Elem(),
+		SliceType: reflect.ValueOf(array).Type(),
+		ElemType:  reflect.TypeOf(array).Elem(),
 	}, nil
 
 }
@@ -64,14 +63,34 @@ func (m *manager) ForEach(f func(interface{}, int)) {
 	}
 }
 
-func (m *manager) Concat(arr interface{}) {
-	// data := m.Data
-	// v := getElemValue(data)
-	/*v := getElemValue(data)
-	vv := getElemValue(&arr)
-	newArray := reflect.Append(reflect.ValueOf(*data), vv)*/
-	// log.Printf("%v, %v", reflect.TypeOf(*data), reflect.TypeOf(arr))
-	// log.Printf("%v, %v", reflect.ValueOf(*data), reflect.ValueOf(arr))
-	newArray := reflect.Append(m.Data, reflect.ValueOf(arr))
-	log.Printf("%v", newArray)
+/*
+ * slice concat, support array, slice and Type value
+ */
+func (m *manager) Concat(args ...interface{}) interface{} {
+	newMData := m.Data
+	for _, param := range args {
+		v := getElemValue(&param)
+		kind := v.Kind()
+
+		if kind == reflect.Array && reflect.TypeOf(param).Elem() == m.ElemType {
+			len := v.Len()
+			for i := 0; i < len; i++ {
+				newMData = reflect.Append(newMData, v.Index(i))
+			}
+			continue
+		}
+
+		if kind == reflect.Slice && reflect.TypeOf(param).Elem() == m.ElemType {
+			newMData = reflect.AppendSlice(newMData, v)
+			continue
+		}
+
+		if reflect.TypeOf(param) == m.ElemType {
+			newMData = reflect.Append(newMData, v)
+			continue
+		}
+	}
+
+	m.Data = newMData
+	return m.GetData()
 }
