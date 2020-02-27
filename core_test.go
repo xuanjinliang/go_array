@@ -102,7 +102,7 @@ func TestManager_CopyWithin(t *testing.T) {
 		arr := []int{1, 2, 3, 4, 5, 6}
 		array, err := Array(arr)
 		So(err, ShouldBeNil)
-		getArray := array.CopyWithin(2, 1, 4).([]int)
+		getArray := array.CopyWithin(2, 1, 5).([]int)
 		log.Printf("%v", getArray)
 	})
 }
@@ -125,7 +125,7 @@ func TestManager_Fill(t *testing.T) {
 		arr := []string{"Banana", "Orange", "Apple", "Mango", "Pear", "Pineapple"}
 		array, err := Array(arr)
 		So(err, ShouldBeNil)
-		data := array.Fill("Runoob", 1, 3).([]string)
+		data := array.Fill("Runoob", 1).([]string)
 		log.Println(data)
 	})
 }

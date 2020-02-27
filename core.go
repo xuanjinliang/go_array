@@ -114,39 +114,36 @@ func (m *manager) CopyWithin(target int, args ...int) interface{} {
 		return m.GetData()
 	}
 
-	start := 0
 	startArr := data.Slice(0, target)
 
+	start := 0
 	end := dataLen
-	endArr := data.Slice(start, end)
-
 	if len(args) > 0 {
 		start = m.minus(args[0])
-		endArr = data.Slice(start, dataLen)
 	}
 
 	if len(args) > 1 {
 		end = m.minus(args[1])
+	}
 
-		if end <= start {
-			return m.GetData()
+	if start >= dataLen || end <= start{
+		return m.GetData()
+	}
+
+	if end > dataLen {
+		end = dataLen
+	}
+
+	endArr := data.Slice(start, end)
+
+	if end < dataLen {
+		startArr = reflect.AppendSlice(startArr, endArr)
+		startLen := startArr.Len()
+
+		if startLen > dataLen {
+			startLen = dataLen
 		}
-
-		if end > dataLen {
-			end = dataLen
-		}
-
-		endArr = data.Slice(start, end)
-
-		if end < dataLen {
-			startArr = reflect.AppendSlice(startArr, endArr)
-			startLen := startArr.Len()
-
-			if startLen > dataLen {
-				startLen = dataLen
-			}
-			endArr = data.Slice(startLen, dataLen)
-		}
+		endArr = data.Slice(startLen, dataLen)
 	}
 
 	s := reflect.MakeSlice(m.SliceType, dataLen, dataLen)
@@ -189,37 +186,36 @@ func (m *manager) Fill(target interface{}, args ...int) interface{} {
 		start = m.minus(args[0])
 	}
 
-	startArr := data.Slice(0, start)
-	endArr := data.Slice(start, end)
 	if len(args) > 1 {
 		end = m.minus(args[1])
+	}
 
-		if end <= start {
-			return m.GetData()
+	if start > dataLen || end <= start {
+		return m.GetData()
+	}
+
+	startArr := data.Slice(0, start)
+	endArr := data.Slice(start, end)
+
+	if end > dataLen {
+		end = dataLen
+	}
+
+	endArr = data.Slice(start, end)
+	l := endArr.Len()
+
+	for i := 0; i < l; i++ {
+		endArr.Index(i).Set(reflect.ValueOf(target))
+	}
+
+	if end < dataLen {
+		startArr = reflect.AppendSlice(startArr, endArr)
+		startLen := startArr.Len()
+
+		if startLen > dataLen {
+			startLen = dataLen
 		}
-
-		if end > dataLen {
-			end = dataLen
-		}
-
-		endArr = data.Slice(start, end)
-		l := endArr.Len()
-
-		for i := 0; i < l; i++ {
-			endArr.Index(i).Set(reflect.ValueOf(target))
-		}
-
-
-		if end < dataLen {
-			startArr = reflect.AppendSlice(startArr, endArr)
-			startLen := startArr.Len()
-
-			if startLen > dataLen {
-				startLen = dataLen
-			}
-			endArr = data.Slice(startLen, dataLen)
-		}
-
+		endArr = data.Slice(startLen, dataLen)
 	}
 
 	m.Data = reflect.AppendSlice(startArr, endArr)
