@@ -118,7 +118,7 @@ func (m *manager) CopyWithin(target int, args ...int) interface{} {
 	startArr := data.Slice(0, target)
 
 	end := dataLen
-	endArr := data.Slice(start, dataLen)
+	endArr := data.Slice(start, end)
 
 	if len(args) > 0 {
 		start = m.minus(args[0])
@@ -136,13 +136,16 @@ func (m *manager) CopyWithin(target int, args ...int) interface{} {
 			end = dataLen
 		}
 
-		curArray := data.Slice(start, end)
-		index := end + 1
-		if index >= dataLen {
-			endArr = curArray
-		} else {
-			endArr = data.Slice(index, dataLen)
-			endArr = reflect.AppendSlice(curArray, endArr)
+		endArr = data.Slice(start, end)
+
+		if end < dataLen {
+			startArr = reflect.AppendSlice(startArr, endArr)
+			startLen := startArr.Len()
+
+			if startLen > dataLen {
+				startLen = dataLen
+			}
+			endArr = data.Slice(startLen, dataLen)
 		}
 	}
 
@@ -150,5 +153,75 @@ func (m *manager) CopyWithin(target int, args ...int) interface{} {
 	reflect.Copy(s, reflect.AppendSlice(startArr, endArr))
 	// log.Printf("%v, %v, %v", startArr, endArr, s)
 	m.Data = s
+	return m.GetData()
+}
+
+/*
+ * slice every
+ */
+func (m *manager) Every(f func(interface{}, int) bool) bool {
+	data := m.Data
+	len := m.Len()
+
+	for i := 0; i < len; i++ {
+		o := data.Index(i)
+		bool := f(o.Interface(), i)
+		if bool == false {
+			return false
+		}
+	}
+
+	return true
+}
+
+func (m *manager) Fill(target interface{}, args ...int) interface{} {
+	data := m.Data
+	dataLen := m.Len()
+
+	if reflect.TypeOf(target) != m.ElemType {
+		return m.GetData()
+	}
+
+	start := 0
+	end := dataLen
+
+	if len(args) > 0 {
+		start = m.minus(args[0])
+	}
+
+	startArr := data.Slice(0, start)
+	endArr := data.Slice(start, end)
+	if len(args) > 1 {
+		end = m.minus(args[1])
+
+		if end <= start {
+			return m.GetData()
+		}
+
+		if end > dataLen {
+			end = dataLen
+		}
+
+		endArr = data.Slice(start, end)
+		l := endArr.Len()
+
+		for i := 0; i < l; i++ {
+			endArr.Index(i).Set(reflect.ValueOf(target))
+		}
+
+
+		if end < dataLen {
+			startArr = reflect.AppendSlice(startArr, endArr)
+			startLen := startArr.Len()
+
+			if startLen > dataLen {
+				startLen = dataLen
+			}
+			endArr = data.Slice(startLen, dataLen)
+		}
+
+	}
+
+	m.Data = reflect.AppendSlice(startArr, endArr)
 	return m.GetData()
 }
