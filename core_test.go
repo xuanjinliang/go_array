@@ -98,11 +98,34 @@ func TestManager_Concat(t *testing.T) {
 }
 
 func TestManager_CopyWithin(t *testing.T) {
-	Convey("test Concat", t, func() {
+	Convey("test CopyWithin", t, func() {
 		arr := []int{1, 2, 3, 4, 5, 6}
 		array, err := Array(arr)
 		So(err, ShouldBeNil)
-		getArray := array.CopyWithin(2, 1, 8).([]int)
+		getArray := array.CopyWithin(2, 1, 5).([]int)
 		log.Printf("%v", getArray)
+	})
+}
+
+func TestManager_Every(t *testing.T) {
+	Convey("test every", t, func() {
+		array, err := Array(sliceData)
+		So(err, ShouldBeNil)
+		bool := array.Every(func(v interface{}, i int) bool {
+			o := v.(int)
+			log.Printf("%v --> %v", o, i)
+			return o > 3
+		})
+		So(bool, ShouldBeFalse)
+	})
+}
+
+func TestManager_Fill(t *testing.T) {
+	Convey("test fill", t, func() {
+		arr := []string{"Banana", "Orange", "Apple", "Mango", "Pear", "Pineapple"}
+		array, err := Array(arr)
+		So(err, ShouldBeNil)
+		data := array.Fill("Runoob", 1).([]string)
+		log.Println(data)
 	})
 }
