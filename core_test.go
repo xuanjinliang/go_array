@@ -129,3 +129,55 @@ func TestManager_Fill(t *testing.T) {
 		log.Println(data)
 	})
 }
+
+func TestManager_Filter(t *testing.T) {
+	Convey("test filter", t, func() {
+		array, err := Array(sliceData)
+		So(err, ShouldBeNil)
+		slice := array.Filter(func(v interface{}, i int) bool {
+			o := v.(int)
+			return o > 1
+		})
+		So(len(slice.([]int)), ShouldEqual, 2)
+	})
+}
+
+func TestManager_Fine(t *testing.T) {
+	Convey("test Fine", t, func() {
+		array, err := Array(sliceData)
+		So(err, ShouldBeNil)
+		num := 2
+		v := array.Fine(func(v interface{}, i int) bool {
+			o := v.(int)
+			return o > num
+		})
+
+		if num >= len(sliceData) { // not find
+			So(v, ShouldBeNil)
+		}else {
+			log.Println(v)
+			So(v.(int), ShouldHaveSameTypeAs, 0)
+		}
+	})
+}
+
+
+
+func TestManager_FineIndex(t *testing.T) {
+	Convey("test FineIndex", t, func() {
+		array, err := Array(sliceData)
+		So(err, ShouldBeNil)
+		num := 3
+		index := array.FineIndex(func(v interface{}, i int) bool {
+			o := v.(int)
+			return o > num
+		})
+		if num >= len(sliceData) - 1 { // not find
+			So(index, ShouldEqual, -1)
+		}else {
+			log.Println(index)
+			So(index, ShouldBeGreaterThanOrEqualTo, 0)
+		}
+	})
+}
+
