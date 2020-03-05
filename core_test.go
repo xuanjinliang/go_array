@@ -22,8 +22,6 @@ func TestArray(t *testing.T) {
 		var arr [3]int
 		copy(arr[:], slice[:])
 		log.Printf("%v", arr)
-		/*aa := append(arrayData, []int{1, 2, 3}...)
-		log.Printf("%v", aa)*/
 	})
 }
 
@@ -33,7 +31,9 @@ func TestSlice(t *testing.T) {
 	Convey("test", t, func() {
 		array, err := Array(sliceData)
 		So(err, ShouldBeNil)
-		log.Printf("%v", array.GetData())
+		data := array.GetData().([]int)
+		So(reflect.DeepEqual(sliceData, data), ShouldBeTrue)
+		// log.Printf("%v", array.GetData())
 		/*aa := append(arrayData, []int{1, 2, 3}...)
 		log.Printf("%v", aa)*/
 	})
@@ -43,8 +43,9 @@ func TestManager_Len(t *testing.T) {
 	Convey("test len", t, func() {
 		array, err := Array(sliceData)
 		So(err, ShouldBeNil)
-		len := array.Len()
-		log.Printf("len --> %v", len)
+		l := array.Len()
+		So(l, ShouldEqual, len(sliceData))
+		//log.Printf("len --> %v", len)
 	})
 }
 
@@ -56,8 +57,9 @@ func TestManager_ForEach(t *testing.T) {
 			//类型转换
 			/*o := v.(int)
 			log.Println(reflect.TypeOf(o))*/
-
-			log.Printf("v --> %v, %v", v, i)
+			num := v.(int) - 1
+			So(num, ShouldEqual, i)
+			// log.Printf("v --> %v, %v", v, i)
 		})
 	})
 }
@@ -103,7 +105,8 @@ func TestManager_CopyWithin(t *testing.T) {
 		array, err := Array(arr)
 		So(err, ShouldBeNil)
 		getArray := array.CopyWithin(2, 1, 5).([]int)
-		log.Printf("%v", getArray)
+		target := []int{1, 2, 2, 3, 4, 5}
+		So(reflect.DeepEqual(getArray, target), ShouldBeTrue)
 	})
 }
 
@@ -126,7 +129,9 @@ func TestManager_Fill(t *testing.T) {
 		array, err := Array(arr)
 		So(err, ShouldBeNil)
 		data := array.Fill("Runoob", 1).([]string)
-		log.Println(data)
+		target := []string{"Banana", "Runoob", "Runoob", "Runoob", "Runoob", "Runoob"}
+		// log.Println(data)
+		So(reflect.DeepEqual(data, target), ShouldBeTrue)
 	})
 }
 
@@ -154,14 +159,12 @@ func TestManager_Fine(t *testing.T) {
 
 		if num >= len(sliceData) { // not find
 			So(v, ShouldBeNil)
-		}else {
+		} else {
 			log.Println(v)
 			So(v.(int), ShouldHaveSameTypeAs, 0)
 		}
 	})
 }
-
-
 
 func TestManager_FineIndex(t *testing.T) {
 	Convey("test FineIndex", t, func() {
@@ -172,12 +175,21 @@ func TestManager_FineIndex(t *testing.T) {
 			o := v.(int)
 			return o > num
 		})
-		if num >= len(sliceData) - 1 { // not find
+		if num >= len(sliceData)-1 { // not find
 			So(index, ShouldEqual, -1)
-		}else {
+		} else {
 			log.Println(index)
 			So(index, ShouldBeGreaterThanOrEqualTo, 0)
 		}
 	})
 }
 
+func TestManager_Includes(t *testing.T) {
+	Convey("test Includes", t, func() {
+		array, err := Array(sliceData)
+		So(err, ShouldBeNil)
+		bool, err := array.Includes("3")
+		So(err, ShouldBeNil)
+		So(bool, ShouldBeFalse)
+	})
+}

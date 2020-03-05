@@ -1,6 +1,8 @@
 package go_array
 
 import (
+	"bytes"
+	"encoding/gob"
 	"errors"
 	"reflect"
 )
@@ -17,6 +19,17 @@ func getElemValue(data *interface{}) reflect.Value {
 		v = v.Elem()
 	}
 	return v
+}
+
+func getBytes(key interface{}) ([]byte, error) {
+	var buf bytes.Buffer
+	enc := gob.NewEncoder(&buf)
+	err := enc.Encode(key)
+	if err != nil {
+		return nil, err
+	}
+	return buf.Bytes(), nil
+
 }
 
 /*
@@ -279,4 +292,30 @@ func (m *manager) FineIndex(f func(interface{}, int) bool) int {
 	}
 
 	return index
+}
+
+/*
+ * slice includes
+ */
+func (m *manager) Includes(v interface{}) (bool, error) {
+	data := m.Data
+	len := m.Len()
+
+	b, e := getBytes(v)
+	if e != nil {
+		return false, e
+	}
+
+	for i := 0; i < len; i++ {
+		o := data.Index(i).Interface()
+		a, err := getBytes(o)
+		if err != nil {
+			return false, err
+		}
+
+		if bool := bytes.Equal(a, b); bool {
+			return bool, nil
+		}
+	}
+	return false, nil
 }
