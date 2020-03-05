@@ -1,6 +1,8 @@
 package go_array
 
 import (
+	"bytes"
+	"encoding/gob"
 	"errors"
 	"reflect"
 )
@@ -17,6 +19,17 @@ func getElemValue(data *interface{}) reflect.Value {
 		v = v.Elem()
 	}
 	return v
+}
+
+func getBytes(key interface{}) ([]byte, error) {
+	var buf bytes.Buffer
+	enc := gob.NewEncoder(&buf)
+	err := enc.Encode(key)
+	if err != nil {
+		return nil, err
+	}
+	return buf.Bytes(), nil
+
 }
 
 /*
@@ -126,7 +139,7 @@ func (m *manager) CopyWithin(target int, args ...int) interface{} {
 		end = m.minus(args[1])
 	}
 
-	if start >= dataLen || end <= start{
+	if start >= dataLen || end <= start {
 		return m.GetData()
 	}
 
@@ -171,6 +184,9 @@ func (m *manager) Every(f func(interface{}, int) bool) bool {
 	return true
 }
 
+/*
+ * slice fill
+ */
 func (m *manager) Fill(target interface{}, args ...int) interface{} {
 	data := m.Data
 	dataLen := m.Len()
@@ -220,4 +236,86 @@ func (m *manager) Fill(target interface{}, args ...int) interface{} {
 
 	m.Data = reflect.AppendSlice(startArr, endArr)
 	return m.GetData()
+}
+
+/*
+ * slice Filter
+ */
+func (m *manager) Filter(f func(interface{}, int) bool) interface{} {
+	data := m.Data
+	len := m.Len()
+
+	s := reflect.MakeSlice(m.SliceType, 0, len)
+	for i := 0; i < len; i++ {
+		o := data.Index(i)
+		if bool := f(o.Interface(), i); bool {
+			s = reflect.Append(s, o)
+		}
+	}
+
+	return s.Interface()
+}
+
+/*
+ * slice Fine
+ */
+func (m *manager) Fine(f func(interface{}, int) bool) interface{} {
+	data := m.Data
+	len := m.Len()
+
+	var v interface{}
+	for i := 0; i < len; i++ {
+		o := data.Index(i)
+		if bool := f(o.Interface(), i); bool {
+			v = o.Interface()
+			break
+		}
+	}
+
+	return v
+}
+
+/*
+ * slice FineIndex
+ */
+func (m *manager) FineIndex(f func(interface{}, int) bool) int {
+	data := m.Data
+	len := m.Len()
+
+	index := -1
+	for i := 0; i < len; i++ {
+		o := data.Index(i)
+		if bool := f(o.Interface(), i); bool {
+			index = i
+			break
+		}
+	}
+
+	return index
+}
+
+/*
+ * slice includes
+ */
+func (m *manager) Includes(v interface{}) (bool, error) {
+	data := m.Data
+	len := m.Len()
+
+	b, e := getBytes(v)
+	if e != nil {
+		return false, e
+	}
+
+	for i := 0; i < len; i++ {
+		o := data.Index(i).Interface()
+		a, err := getBytes(o)
+		if err != nil {
+			return false, err
+		}
+
+		if bool := bytes.Equal(a, b); bool {
+			return bool, nil
+		}
+	}
+	return false, nil
 }
