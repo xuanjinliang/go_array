@@ -261,15 +261,10 @@ func (m *manager) Filter(f func(interface{}, int) bool) interface{} {
  */
 func (m *manager) Fine(f func(interface{}, int) bool) interface{} {
 	data := m.Data
-	len := m.Len()
-
 	var v interface{}
-	for i := 0; i < len; i++ {
-		o := data.Index(i)
-		if bool := f(o.Interface(), i); bool {
-			v = o.Interface()
-			break
-		}
+	i := m.FineIndex(f)
+	if i > -1 {
+		v = data.Index(i).Interface()
 	}
 
 	return v
@@ -298,24 +293,40 @@ func (m *manager) FineIndex(f func(interface{}, int) bool) int {
  * slice includes
  */
 func (m *manager) Includes(v interface{}) (bool, error) {
+	index, err := m.IndexOf(v)
+	if err != nil {
+		return false, err
+	}
+	if index > -1 {
+		return true, nil
+	}
+	return false, nil
+}
+
+/*
+ * slice indexOf
+ */
+func (m *manager) IndexOf(v interface{}) (int, error) {
 	data := m.Data
 	len := m.Len()
 
+	index := -1
 	b, e := getBytes(v)
 	if e != nil {
-		return false, e
+		return index, e
 	}
 
 	for i := 0; i < len; i++ {
 		o := data.Index(i).Interface()
 		a, err := getBytes(o)
 		if err != nil {
-			return false, err
+			return index, err
 		}
 
 		if bool := bytes.Equal(a, b); bool {
-			return bool, nil
+			return i, nil
 		}
 	}
-	return false, nil
+
+	return index, nil
 }
