@@ -266,7 +266,6 @@ func (m *manager) Fine(f func(interface{}, int) bool) interface{} {
 	if i > -1 {
 		v = data.Index(i).Interface()
 	}
-
 	return v
 }
 
