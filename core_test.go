@@ -193,3 +193,13 @@ func TestManager_Includes(t *testing.T) {
 		So(bool, ShouldBeFalse)
 	})
 }
+
+func TestManager_IndexOf(t *testing.T) {
+	Convey("test IndexOf", t, func() {
+		array, err := Array(sliceData)
+		So(err, ShouldBeNil)
+		index, err := array.IndexOf(3)
+		So(err, ShouldBeNil)
+		So(index, ShouldEqual, 2)
+	})
+}
