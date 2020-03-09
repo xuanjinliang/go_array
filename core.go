@@ -436,3 +436,19 @@ func (m *manager) Push(args ...interface{}) int {
 	m.Data = data
 	return m.Len()
 }
+
+/*
+ * slice reverse
+ */
+func (m *manager) Reverse() interface{} {
+	data := m.Data
+	l := m.Len()
+
+	s := reflect.MakeSlice(m.SliceType, 0, l)
+	for i := l - 1; i >= 0; i-- {
+		o := data.Index(i)
+		s = reflect.Append(s, o)
+	}
+	m.Data = s
+	return m.GetData()
+}

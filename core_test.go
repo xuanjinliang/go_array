@@ -267,3 +267,14 @@ func TestManager_Push(t *testing.T) {
 		So(data[l-1], ShouldEqual, 6)
 	})
 }
+
+func TestManager_Reverse(t *testing.T) {
+	Convey("test Reverse", t, func() {
+		array, err := Array(sliceData)
+		So(err, ShouldBeNil)
+		s := array.Reverse().([]int)
+		l := len(sliceData)
+		So(array.Len(), ShouldEqual, l)
+		So(s[0], ShouldEqual, sliceData[l - 1])
+	})
+}
