@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/gob"
 	"errors"
+	"fmt"
 	"reflect"
 )
 
@@ -68,9 +69,9 @@ func (m *manager) Len() int {
  */
 func (m *manager) ForEach(f func(interface{}, int)) {
 	data := m.Data
-	len := m.Len()
+	l := m.Len()
 
-	for i := 0; i < len; i++ {
+	for i := 0; i < l; i++ {
 		o := data.Index(i)
 		f(o.Interface(), i)
 	}
@@ -86,8 +87,8 @@ func (m *manager) Concat(args ...interface{}) interface{} {
 		kind := v.Kind()
 
 		if kind == reflect.Array && reflect.TypeOf(param).Elem() == m.ElemType {
-			len := v.Len()
-			for i := 0; i < len; i++ {
+			l := v.Len()
+			for i := 0; i < l; i++ {
 				newMData = reflect.Append(newMData, v.Index(i))
 			}
 			continue
@@ -171,9 +172,9 @@ func (m *manager) CopyWithin(target int, args ...int) interface{} {
  */
 func (m *manager) Every(f func(interface{}, int) bool) bool {
 	data := m.Data
-	len := m.Len()
+	l := m.Len()
 
-	for i := 0; i < len; i++ {
+	for i := 0; i < l; i++ {
 		o := data.Index(i)
 		bool := f(o.Interface(), i)
 		if bool == false {
@@ -243,10 +244,10 @@ func (m *manager) Fill(target interface{}, args ...int) interface{} {
  */
 func (m *manager) Filter(f func(interface{}, int) bool) interface{} {
 	data := m.Data
-	len := m.Len()
+	l := m.Len()
 
-	s := reflect.MakeSlice(m.SliceType, 0, len)
-	for i := 0; i < len; i++ {
+	s := reflect.MakeSlice(m.SliceType, 0, l)
+	for i := 0; i < l; i++ {
 		o := data.Index(i)
 		if bool := f(o.Interface(), i); bool {
 			s = reflect.Append(s, o)
@@ -266,7 +267,6 @@ func (m *manager) Fine(f func(interface{}, int) bool) interface{} {
 	if i > -1 {
 		v = data.Index(i).Interface()
 	}
-
 	return v
 }
 
@@ -275,10 +275,10 @@ func (m *manager) Fine(f func(interface{}, int) bool) interface{} {
  */
 func (m *manager) FineIndex(f func(interface{}, int) bool) int {
 	data := m.Data
-	len := m.Len()
+	l := m.Len()
 
 	index := -1
-	for i := 0; i < len; i++ {
+	for i := 0; i < l; i++ {
 		o := data.Index(i)
 		if bool := f(o.Interface(), i); bool {
 			index = i
@@ -308,7 +308,7 @@ func (m *manager) Includes(v interface{}) (bool, error) {
  */
 func (m *manager) IndexOf(v interface{}) (int, error) {
 	data := m.Data
-	len := m.Len()
+	l := m.Len()
 
 	index := -1
 	b, e := getBytes(v)
@@ -316,7 +316,7 @@ func (m *manager) IndexOf(v interface{}) (int, error) {
 		return index, e
 	}
 
-	for i := 0; i < len; i++ {
+	for i := 0; i < l; i++ {
 		o := data.Index(i).Interface()
 		a, err := getBytes(o)
 		if err != nil {
@@ -329,4 +329,126 @@ func (m *manager) IndexOf(v interface{}) (int, error) {
 	}
 
 	return index, nil
+}
+
+/*
+ * slice join
+ */
+func (m *manager) Join(sep string) string {
+	data := m.Data
+	l := m.Len()
+
+	switch l {
+	case 0:
+		return ""
+	case 1:
+		return fmt.Sprintf("%v", data.Index(0).Interface())
+	}
+
+	str := fmt.Sprintf("%v", data.Index(0).Interface())
+	for i := 1; i < l; i++ {
+		o := data.Index(i).Interface()
+		a := fmt.Sprintf("%v", o)
+		str = str + sep + a
+	}
+
+	return str
+}
+
+/*
+ * slice lastIndexOf
+ */
+func (m *manager) LastIndexOf(v interface{}) (int, error) {
+	data := m.Data
+	l := m.Len()
+
+	index := -1
+	b, e := getBytes(v)
+	if e != nil {
+		return index, e
+	}
+
+	for i := l - 1; i >= 0; i-- {
+		o := data.Index(i).Interface()
+		a, err := getBytes(o)
+		if err != nil {
+			return index, err
+		}
+
+		if bool := bytes.Equal(a, b); bool {
+			return i, nil
+		}
+	}
+
+	return index, nil
+}
+
+/*
+ * slice map
+ */
+func (m *manager) Map(f func(interface{}, int) interface{}) interface{} {
+	data := m.Data
+	l := m.Len()
+
+	s := reflect.MakeSlice(m.SliceType, 0, l)
+	for i := 0; i < l; i++ {
+		o := data.Index(i)
+		v := f(o.Interface(), i)
+		s = reflect.Append(s, reflect.ValueOf(v))
+	}
+
+	return s.Interface()
+}
+
+/*
+ * slice pop
+ */
+func (m *manager) Pop() interface{} {
+	data := m.Data
+	l := m.Len()
+
+	if l == 0 {
+		return nil
+	}
+
+	cap := l - 1
+	v := data.Index(cap).Interface()
+	s := reflect.MakeSlice(m.SliceType, cap, cap)
+	reflect.Copy(s, data)
+
+	m.Data = s
+
+	return v
+}
+
+/*
+ * slice push
+ */
+func (m *manager) Push(args ...interface{}) int {
+	data := m.Data
+	for _, param := range args {
+		v := getElemValue(&param)
+		if reflect.TypeOf(param) == m.ElemType {
+			data = reflect.Append(data, v)
+		}
+	}
+
+	m.Data = data
+	return m.Len()
+}
+
+/*
+ * slice reverse
+ */
+func (m *manager) Reverse() interface{} {
+	data := m.Data
+	l := m.Len()
+
+	s := reflect.MakeSlice(m.SliceType, 0, l)
+	for i := l - 1; i >= 0; i-- {
+		o := data.Index(i)
+		s = reflect.Append(s, o)
+	}
+	m.Data = s
+	return m.GetData()
 }
