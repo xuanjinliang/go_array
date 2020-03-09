@@ -203,3 +203,47 @@ func TestManager_IndexOf(t *testing.T) {
 		So(index, ShouldEqual, 2)
 	})
 }
+
+func TestManager_Join(t *testing.T) {
+	Convey("test Join", t, func() {
+		type Person struct {
+			name string
+			age  int
+		}
+		newSlice := []Person{
+			{name: "123", age: 1},
+			{name: "456", age: 2},
+			{name: "789", age: 3},
+		}
+		array, err := Array(newSlice)
+		So(err, ShouldBeNil)
+		str := array.Join("|")
+		log.Println(str)
+	})
+}
+
+
+func TestManager_LastIndexOf(t *testing.T) {
+	Convey("test LastIndexOf", t, func() {
+		array, err := Array(sliceData)
+		So(err, ShouldBeNil)
+		index, err := array.LastIndexOf(3)
+		So(err, ShouldBeNil)
+		So(index, ShouldEqual, 2)
+	})
+}
+
+func TestManager_Map(t *testing.T) {
+	Convey("test Map", t, func() {
+		array, err := Array(sliceData)
+		So(err, ShouldBeNil)
+		data := array.Map(func(v interface{}, i int) interface{} {
+			o := v.(int) * 10
+			return o
+		})
+		intData := data.([]int)
+		for i, v := range sliceData {
+			So(intData[i] / 10, ShouldEqual, v)
+		}
+	})
+}
