@@ -247,3 +247,13 @@ func TestManager_Map(t *testing.T) {
 		}
 	})
 }
+
+func TestManager_Pop(t *testing.T) {
+	Convey("test Pop", t, func() {
+		array, err := Array(sliceData)
+		So(err, ShouldBeNil)
+		v := array.Pop()
+		So(v, ShouldEqual, sliceData[len(sliceData) - 1])
+		So(array.Len(), ShouldEqual, len(sliceData) - 1)
+	})
+}

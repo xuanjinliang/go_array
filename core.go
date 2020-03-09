@@ -399,3 +399,24 @@ func (m *manager) Map(f func(interface{}, int) interface{}) interface{} {
 
 	return s.Interface()
 }
+
+/*
+ * slice pop
+ */
+func (m *manager) Pop() interface{} {
+	data := m.Data
+	l := m.Len()
+
+	if l == 0 {
+		return nil
+	}
+
+	cap := l - 1
+	v := data.Index(cap).Interface()
+	s := reflect.MakeSlice(m.SliceType, cap, cap)
+	reflect.Copy(s, data)
+
+	m.Data = s
+
+	return v
+}
