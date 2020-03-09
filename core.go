@@ -420,3 +420,19 @@ func (m *manager) Pop() interface{} {
 
 	return v
 }
+
+/*
+ * slice push
+ */
+func (m *manager) Push(args ...interface{}) int {
+	data := m.Data
+	for _, param := range args {
+		v := getElemValue(&param)
+		if reflect.TypeOf(param) == m.ElemType {
+			data = reflect.Append(data, v)
+		}
+	}
+
+	m.Data = data
+	return m.Len()
+}

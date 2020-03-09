@@ -222,7 +222,6 @@ func TestManager_Join(t *testing.T) {
 	})
 }
 
-
 func TestManager_LastIndexOf(t *testing.T) {
 	Convey("test LastIndexOf", t, func() {
 		array, err := Array(sliceData)
@@ -243,7 +242,7 @@ func TestManager_Map(t *testing.T) {
 		})
 		intData := data.([]int)
 		for i, v := range sliceData {
-			So(intData[i] / 10, ShouldEqual, v)
+			So(intData[i]/10, ShouldEqual, v)
 		}
 	})
 }
@@ -253,7 +252,18 @@ func TestManager_Pop(t *testing.T) {
 		array, err := Array(sliceData)
 		So(err, ShouldBeNil)
 		v := array.Pop()
-		So(v, ShouldEqual, sliceData[len(sliceData) - 1])
-		So(array.Len(), ShouldEqual, len(sliceData) - 1)
+		So(v, ShouldEqual, sliceData[len(sliceData)-1])
+		So(array.Len(), ShouldEqual, len(sliceData)-1)
+	})
+}
+
+func TestManager_Push(t *testing.T) {
+	Convey("test Push", t, func() {
+		array, err := Array(sliceData)
+		So(err, ShouldBeNil)
+		l := array.Push(4, 5, 6)
+		So(l, ShouldEqual, len(sliceData) + 3)
+		data := array.GetData().([]int)
+		So(data[l-1], ShouldEqual, 6)
 	})
 }
