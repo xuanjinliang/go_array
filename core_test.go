@@ -262,7 +262,7 @@ func TestManager_Push(t *testing.T) {
 		array, err := Array(sliceData)
 		So(err, ShouldBeNil)
 		l := array.Push(4, 5, 6)
-		So(l, ShouldEqual, len(sliceData) + 3)
+		So(l, ShouldEqual, len(sliceData)+3)
 		data := array.GetData().([]int)
 		So(data[l-1], ShouldEqual, 6)
 	})
@@ -275,6 +275,95 @@ func TestManager_Reverse(t *testing.T) {
 		s := array.Reverse().([]int)
 		l := len(sliceData)
 		So(array.Len(), ShouldEqual, l)
-		So(s[0], ShouldEqual, sliceData[l - 1])
+		So(s[0], ShouldEqual, sliceData[l-1])
+	})
+}
+
+func TestManager_Reduce(t *testing.T) {
+	Convey("test Reduce", t, func() {
+		array, err := Array(sliceData)
+		So(err, ShouldBeNil)
+		s := array.Reduce(func(total, currentValue interface{}, index int) interface{} {
+			t := total.(int)
+			c := currentValue.(int)
+			return t + c
+		})
+		So(s.(int), ShouldEqual, 6)
+	})
+}
+
+func TestManager_ReduceRight(t *testing.T) {
+	Convey("test ReduceRight", t, func() {
+		array, err := Array(sliceData)
+		So(err, ShouldBeNil)
+		s := array.ReduceRight(func(total, currentValue interface{}, index int) interface{} {
+			t := total.(int)
+			c := currentValue.(int)
+			return t - c
+		})
+		So(s.(int), ShouldEqual, 0)
+	})
+}
+
+func TestManager_Shift(t *testing.T) {
+	Convey("test Shift", t, func() {
+		array, err := Array(sliceData)
+		So(err, ShouldBeNil)
+		s := array.Shift()
+		So(s.(int), ShouldEqual, sliceData[0])
+		So(reflect.DeepEqual(array.GetData().([]int), sliceData[1:]), ShouldBeTrue)
+	})
+}
+
+func TestManager_Slice(t *testing.T) {
+	Convey("test ReduceRight", t, func() {
+		data := []int{1, 2, 3, 4, 5}
+		array, err := Array(data)
+		So(err, ShouldBeNil)
+		s := array.Slice(1, 4)
+		So(reflect.DeepEqual(s.([]int), data[1:4]), ShouldBeTrue)
+	})
+}
+
+func TestManager_Some(t *testing.T) {
+	Convey("test Some", t, func() {
+		array, err := Array(sliceData)
+		So(err, ShouldBeNil)
+		bool := array.Some(func(v interface{}, i int) bool {
+			o := v.(int)
+			return o == 2
+		})
+		So(bool, ShouldBeTrue)
+	})
+}
+
+
+func TestManager_Splice(t *testing.T) {
+	Convey("test Splice", t, func() {
+		data := []int{1, 2, 3, 4, 5}
+		array, err := Array(data)
+		So(err, ShouldBeNil)
+		s := array.Splice(2, 5, 7, 8, 9)
+		So(reflect.DeepEqual(s.([]int), []int{3, 4, 5}), ShouldBeTrue)
+		So(reflect.DeepEqual(array.GetData().([]int), []int{1, 2, 7, 8, 9}), ShouldBeTrue)
+	})
+}
+
+func TestManager_ToString(t *testing.T) {
+	Convey("test ToString", t, func() {
+		array, err := Array(sliceData)
+		So(err, ShouldBeNil)
+		str := array.ToString()
+		So(str, ShouldEqual, "1,2,3")
+	})
+}
+
+func TestManager_UnShift(t *testing.T) {
+	Convey("test UnShift", t, func() {
+		array, err := Array(sliceData)
+		So(err, ShouldBeNil)
+		s := array.UnShift(4, 5, 6)
+		So(s, ShouldEqual, 6)
+		So(reflect.DeepEqual(array.GetData().([]int), []int{4, 5, 6, 1, 2, 3}), ShouldBeTrue)
 	})
 }

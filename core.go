@@ -452,3 +452,178 @@ func (m *manager) Reverse() interface{} {
 	m.Data = s
 	return m.GetData()
 }
+
+/*
+ * slice reduce
+ */
+func (m *manager) Reduce(f func(interface{}, interface{}, int) interface{}) interface{} {
+	data := m.Data
+	l := m.Len()
+
+	switch l {
+	case 0:
+		return m.GetData()
+	case 1:
+		return data.Index(0).Interface()
+	}
+
+	total := data.Index(0).Interface()
+	for i := 1; i < l; i++ {
+		currentValue := data.Index(i).Interface()
+		total = f(total, currentValue, i)
+	}
+
+	return total
+}
+
+/*
+ * slice reduceRight
+ */
+func (m *manager) ReduceRight(f func(interface{}, interface{}, int) interface{}) interface{} {
+	data := m.Data
+	l := m.Len()
+
+	switch l {
+	case 0:
+		return m.GetData()
+	case 1:
+		return data.Index(0).Interface()
+	}
+
+	total := data.Index(l - 1).Interface()
+	for i := l - 2; i >= 0; i-- {
+		currentValue := data.Index(i).Interface()
+		total = f(total, currentValue, i)
+	}
+
+	return total
+}
+
+/*
+ * slice shift
+ */
+func (m *manager) Shift() interface{} {
+	data := m.Data
+	l := m.Len()
+
+	if l == 0 {
+		return nil
+	}
+
+	cap := l - 1
+	v := data.Index(0).Interface()
+	s := reflect.MakeSlice(m.SliceType, cap, cap)
+	reflect.Copy(s, data.Slice(1, l))
+
+	m.Data = s
+
+	return v
+}
+
+/*
+ * slice Slice
+ */
+func (m *manager) Slice(start, end int) interface{} {
+	data := m.Data
+	l := m.Len()
+
+	start = m.minus(start)
+	end = m.minus(end)
+
+	if end > l {
+		end = l
+	}
+
+	if start > end {
+		return reflect.MakeSlice(m.SliceType, 0, 0).Interface()
+	}
+
+	return data.Slice(start, end).Interface()
+}
+
+/*
+ * slice some
+ */
+func (m *manager) Some(f func(interface{}, int) bool) bool {
+	data := m.Data
+	l := m.Len()
+
+	b := false
+	for i := 0; i < l; i++ {
+		o := data.Index(i)
+		b = f(o.Interface(), i)
+		if b {
+			break
+		}
+	}
+
+	return b
+}
+
+/*
+ * slice splice
+ */
+func (m *manager) Splice(index, howmany int, args ...interface{}) interface{} {
+	data := m.Data
+	l := m.Len()
+
+	index = m.minus(index)
+	if index >= l {
+		return reflect.MakeSlice(m.SliceType, 0, 0).Interface()
+	}
+
+	startSlice := data.Slice(0, index)
+
+	if howmany < 0 {
+		howmany = 0
+	}
+
+	if howmany > l-index {
+		howmany = l - index
+	}
+
+	cutOut := data.Slice(index, index+howmany)
+	cutOutLen := cutOut.Len()
+	newResult := reflect.MakeSlice(m.SliceType, cutOutLen, cutOutLen)
+	reflect.Copy(newResult, cutOut)
+
+	endSlice := data.Slice(index+howmany, l)
+
+	for _, param := range args {
+		v := getElemValue(&param)
+		if reflect.TypeOf(param) == m.ElemType {
+			startSlice = reflect.Append(startSlice, v)
+		}
+	}
+
+	s := reflect.AppendSlice(startSlice, endSlice)
+	m.Data = s
+
+	return newResult.Interface()
+}
+
+/*
+ * slice toString
+ */
+func (m *manager) ToString() string {
+	return m.Join(",")
+}
+
+/*
+ * slice unshift
+ */
+func (m *manager) UnShift(args ...interface{}) int {
+	data := m.Data
+
+	s := reflect.MakeSlice(m.SliceType, 0, len(args))
+	for _, param := range args {
+		v := getElemValue(&param)
+		if reflect.TypeOf(param) == m.ElemType {
+			s = reflect.Append(s, v)
+		}
+	}
+
+	m.Data = reflect.AppendSlice(s, data)
+
+	return m.Len()
+}
